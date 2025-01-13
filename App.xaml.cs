@@ -1,21 +1,21 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// App.xaml.cs (if you want to manually show DashWindow on startup, optional)
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.IO;
 using System.Windows;
-using Hollinger2025.Models;        // EF context
-using Hollinger2025.Views;        // So we can reference LoginWindow
-using Hollinger2025.ViewModels;   // So we can reference LoginViewModel
+using Hollinger2025.Models;
+using Hollinger2025.Views;
+using Hollinger2025.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hollinger2025
 {
     public partial class App : Application
     {
-        public static IConfiguration Configuration { get; private set; }
+        public static IConfiguration Configuration { get; private set; } = null!;
 
-        // Keep a reference to the DI host (so we can resolve services later if needed)
-        private IHost _host;
+        private IHost _host = null!;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -31,36 +31,27 @@ namespace Hollinger2025
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    // We already have our "Configuration" object,
-                    // but if you prefer, you could also do context.Configuration = this project's config.
-
-                    // 2a) Add our EF context
+                    // EF context
                     services.AddDbContext<EthicsContext>(options =>
                     {
                         var connString = Configuration.GetConnectionString("SqliteConnection");
                         options.UseSqlite(connString);
                     });
 
-                    // 2b) Add our ViewModels
-                    // Transient: a new instance each time it's requested
+                    // ViewModels
                     services.AddTransient<LoginViewModel>();
                     services.AddTransient<DashViewModel>();
 
-                    // 2c) Add our Windows
+                    // Windows
                     services.AddTransient<LoginWindow>();
                     services.AddTransient<DashWindow>();
                 })
                 .Build();
 
-            // 3) Get the service provider
+            // 3) Show the login window
             var serviceProvider = _host.Services;
-
-            // 4) Show the Login Window
             var loginWindow = serviceProvider.GetRequiredService<LoginWindow>();
-            var loginVm = serviceProvider.GetRequiredService<LoginViewModel>();
-            loginWindow.DataContext = loginVm;
             loginWindow.Show();
-
         }
     }
 }

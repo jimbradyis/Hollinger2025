@@ -13,18 +13,31 @@ namespace Hollinger2025.Views
             this.DataContextChanged += LoginWindow_DataContextChanged;
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LoginViewModel vm)
+            {
+                if (!string.IsNullOrEmpty(vm.Password))
+                {
+                    PasswordBox.Password = vm.Password;
+                }
+            }
+        }
+
 
         private void LoginWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (DataContext is LoginViewModel viewModel)
             {
-                // Set initial password if it exists
+                // 1) If the VM already has a password from saved settings,
+                //    set the masked PasswordBox property:
                 if (!string.IsNullOrEmpty(viewModel.Password))
                 {
                     PasswordBox.Password = viewModel.Password;
                 }
 
-                // Subscribe to ShowPassword changes
+                // 2) Subscribe to ShowPassword changes to swap
+                //    between masked and plain text:
                 viewModel.PropertyChanged += (s, args) =>
                 {
                     if (args.PropertyName == nameof(LoginViewModel.ShowPassword))
@@ -35,13 +48,17 @@ namespace Hollinger2025.Views
             }
         }
 
+
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            // Only update the ViewModel if the user is typing in the PasswordBox 
-            // and ShowPassword == false
-            if (DataContext is LoginViewModel viewModel && viewModel.ShowPassword == false)
+            if (DataContext is LoginViewModel viewModel)
             {
-                viewModel.Password = PasswordBox.Password;
+                // Always move the typed password into the ViewModel’s Password,
+                // but only if the PasswordBox is actually visible (i.e. user can type).
+                if (PasswordBox.Visibility == Visibility.Visible)
+                {
+                    viewModel.Password = PasswordBox.Password;
+                }
             }
         }
 
@@ -49,14 +66,19 @@ namespace Hollinger2025.Views
         {
             if (viewModel.ShowPassword)
             {
-                // Move the current PasswordBox value into the PlainTextPasswordBox
+                // The user wants to see it in plain text:
+                // So we copy whatever is in the masked PasswordBox into the plain TextBox:
                 PlainTextPasswordBox.Text = PasswordBox.Password;
+                PlainTextPasswordBox.Focus(); // optional
             }
             else
             {
-                // Move the current PlainTextPasswordBox value into the PasswordBox
-                PasswordBox.Password = viewModel.Password;
+                // The user wants it masked:
+                // So we copy the plain text into the masked PasswordBox:
+                PasswordBox.Password = PlainTextPasswordBox.Text;
+                PasswordBox.Focus(); // optional
             }
         }
+
     }
 }

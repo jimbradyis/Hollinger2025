@@ -1,12 +1,84 @@
 ﻿<Window x:Class="Hollinger2025.Views.DashWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:converters="clr-namespace:Hollinger2025.Converters"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Dashboard" Height="600" Width="800">
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Hollinger2025.Views"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Dashboard"
+        Height="600" Width="800"
+        Loaded="DashWindow_Loaded">
 
-    <Grid>
-        <TextBlock Text="{Binding CurrentArchivist.Ric}"
-                   FontSize="20"
+    <!-- Define converter BEFORE usage: -->
+    <Window.Resources>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Title row -->
+            <RowDefinition Height="Auto"/>
+            <!-- Archivist row -->
+            <RowDefinition Height="Auto"/>
+            <!-- Filters row -->
+            <RowDefinition Height="*"/>
+            <!-- DataGrid row -->
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Hollinger 2025 Dashboard"
+                   FontSize="24"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                   Margin="0,0,0,10"/>
+
+        <!-- Archivist: show who is logged in -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="0,0,0,10">
+            <TextBlock Text="Logged in as: " FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding UserName}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Filters: "Select All", choose Congress, choose Subcommittee -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+            <CheckBox Content="Select All"
+                      IsChecked="{Binding SelectAll}"
+                      VerticalAlignment="Center"
+                      Margin="0,0,20,0" />
+
+            <TextBlock Text="Congress:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Width="150"
+                      ItemsSource="{Binding Congresses}"
+                      DisplayMemberPath="CongressNo"
+                      SelectedItem="{Binding SelectedCongress}"
+                      IsEnabled="{Binding SelectAll, Converter={StaticResource InverseBooleanConverter}}"
+                      Margin="0,0,20,0"/>
+
+            <TextBlock Text="Subcommittee:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Width="150"
+                      ItemsSource="{Binding Inquiries}"
+                      DisplayMemberPath="Subcommittee"
+                      SelectedItem="{Binding SelectedInquiry}"
+                      IsEnabled="{Binding SelectAll, Converter={StaticResource InverseBooleanConverter}}"/>
+        </StackPanel>
+
+        <!-- DataGrid of Archives -->
+        <DataGrid Grid.Row="3"
+                  ItemsSource="{Binding Archives}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  Margin="0,0,0,10">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="HASC Key" Binding="{Binding HascKey}" Width="Auto" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Subcommittee" Binding="{Binding Subcommittee}" Width="Auto" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Archive #" Binding="{Binding ArchiveNo}" Width="Auto" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Congress" Binding="{Binding Congress}" Width="Auto" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>
