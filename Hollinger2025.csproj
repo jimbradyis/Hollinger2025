@@ -13,6 +13,8 @@
     <Folder Include="Resources\" />
     <Folder Include="Services\" />
     <Folder Include="Resources\" />
+    <Folder Include="Services\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
